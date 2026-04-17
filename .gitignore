@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+.env
+uv.lock
+
+# Runtime artifacts
+outputs/
+input_reports/
+
+# Office temp files
+~$*.doc
+~$*.docx
+
+# Audit report source files
+*.doc
+*.docx

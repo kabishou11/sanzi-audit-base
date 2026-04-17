@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling>=1.25.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sanzi-audit-pipeline"
+version = "0.1.0"
+description = "Batch extraction and analysis pipeline for Sanzi audit reports."
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "openai>=1.68.0",
+  "python-dotenv>=1.0.1",
+  "pytest>=8.3.5",
+]
+
+[project.scripts]
+audit-pipeline = "src.main:main"
+
+[tool.uv]
+package = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
