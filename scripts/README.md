@@ -1,6 +1,6 @@
 # 脚本用法说明
 
-这份说明聚焦最近常用的 4 个脚本，适合直接复制命令运行。
+这份说明聚焦最近常用的 5 个脚本，适合直接复制命令运行。
 
 默认 Python 环境：
 
@@ -192,6 +192,37 @@
 - `分类置信度`
 - `分类依据摘要`
 
+## 5. 将多个 sheet 的分类结果合并为一个总 CSV
+
+脚本：
+- `scripts/merge_sheet_csvs.py`
+
+用途：
+- 将“每个 sheet 一个 CSV”的输出目录合并成一个总 CSV
+- 自动补上 `sheet_name` 和 `sheet_file_name` 两列，方便后续筛选和透视
+
+默认运行：
+
+```powershell
+& 'F:\3work\1审计处理汇总\.venv\Scripts\python.exe' `
+  'F:\3work\1审计处理汇总\scripts\merge_sheet_csvs.py'
+```
+
+合并当前技术规则分类结果目录：
+
+```powershell
+& 'F:\3work\1审计处理汇总\.venv\Scripts\python.exe' `
+  'F:\3work\1审计处理汇总\scripts\merge_sheet_csvs.py' `
+  --input-dir 'F:\3work\1审计处理汇总\input_reports\xlsx\major_issues_by_sheet_v7_technical_rules_csv' `
+  --output-csv 'F:\3work\1审计处理汇总\input_reports\xlsx\major_issues_by_sheet_v7_technical_rules_merged.csv'
+```
+
+输出：
+- 一个总 `.csv` 文件
+- 默认会保留原有字段，并新增：
+  - `sheet_name`
+  - `sheet_file_name`
+
 ## 推荐运行顺序
 
 如果你是从提取到分类完整走一遍，推荐顺序：
@@ -200,6 +231,7 @@
 2. `extract_financial_management_to_csv.py`
 3. `extract_financial_elements_with_llm.py`
 4. `classify_technical_rules_from_xlsx.py`
+5. `merge_sheet_csvs.py`
 
 ## 查看脚本内帮助
 
