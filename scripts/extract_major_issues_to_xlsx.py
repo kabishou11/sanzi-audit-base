@@ -416,7 +416,14 @@ def resolve_output_path(output_path: Path) -> Path:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="按二级标题拆分“审计发现的主要问题”，输出为多 sheet 的 Excel 文件。"
+        description="按二级标题拆分“审计发现的主要问题”，输出为多 sheet 的 Excel 文件。",
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=(
+            "常用示例：\n"
+            f"  python {Path(__file__).name}\n"
+            f"  python {Path(__file__).name} --input-dir \"{DEFAULT_INPUT_DIR}\"\n"
+            f"  python {Path(__file__).name} --output \"{DEFAULT_OUTPUT_XLSX.with_name('major_issues_by_sheet_v7.xlsx')}\""
+        ),
     )
     parser.add_argument(
         "--input-dir",

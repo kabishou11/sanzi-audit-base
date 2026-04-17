@@ -4,15 +4,18 @@ import argparse
 import csv
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Any
+
+LOGGER = logging.getLogger("extract_financial_elements_with_llm")
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from src.config import load_config
 from src.llm.client import OpenAICompatibleClient
 
-
-LOGGER = logging.getLogger("extract_financial_elements_with_llm")
-ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_CSV = ROOT / "outputs" / "financial_management_items.csv"
 DEFAULT_OUTPUT_CSV = ROOT / "outputs" / "financial_management_items_with_elements.csv"
 DEFAULT_REASONING_JSONL = ROOT / "outputs" / "logs" / "financial_management_items_reasoning.jsonl"
@@ -55,36 +58,44 @@ SYSTEM_PROMPT = """你是审计问题原文的规则化提取助手。
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Use MiniMax/OpenAI-compatible model to extract element/rule text from item_content."
+        description="调用 OpenAI 兼容模型，对财务管理问题逐行提取要素/规则文本。",
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=(
+            "常用示例：\n"
+            f"  python {Path(__file__).name}\n"
+            f"  python {Path(__file__).name} --limit 20\n"
+            f"  python {Path(__file__).name} --input-csv \"{DEFAULT_INPUT_CSV.with_name('financial_management_items_v2.csv')}\"\n"
+            f"  python {Path(__file__).name} --overwrite"
+        ),
     )
     parser.add_argument(
         "--input-csv",
         type=Path,
         default=DEFAULT_INPUT_CSV,
-        help="Input CSV path containing item_content column.",
+        help="输入 CSV 路径，需包含 item_content 列。",
     )
     parser.add_argument(
         "--output-csv",
         type=Path,
         default=DEFAULT_OUTPUT_CSV,
-        help="Output CSV path with extracted text appended as a new column.",
+        help="输出 CSV 路径，会新增 extracted_elements_rules 列。",
     )
     parser.add_argument(
         "--reasoning-jsonl",
         type=Path,
         default=DEFAULT_REASONING_JSONL,
-        help="JSONL file storing reasoning/raw response for each processed row.",
+        help="保存每行模型原始响应与推理细节的 JSONL 路径。",
     )
     parser.add_argument(
         "--limit",
         type=int,
         default=None,
-        help="Process only the first N rows for sampling/debugging.",
+        help="仅处理前 N 行，适合抽样或调试。",
     )
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="Overwrite output files if they already exist.",
+        help="若输出文件已存在，则直接覆盖。",
     )
     return parser.parse_args()
 

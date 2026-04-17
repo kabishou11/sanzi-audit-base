@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import csv
 import re
 from pathlib import Path
@@ -76,9 +77,53 @@ def extract_financial_items(markdown_text: str) -> list[dict[str, str]]:
     return results
 
 
+def resolve_output_path(path: Path) -> Path:
+    if not path.exists():
+        return path
+    stem = path.stem
+    suffix = path.suffix
+    index = 2
+    while True:
+        candidate = path.with_name(f"{stem}_v{index}{suffix}")
+        if not candidate.exists():
+            return candidate
+        index += 1
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="从提取后的 Markdown 中汇总所有“财务管理方面”问题，导出为 CSV。",
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog=(
+            "常用示例：\n"
+            f"  python {Path(__file__).name}\n"
+            f"  python {Path(__file__).name} --input-dir \"{EXTRACTED_MD_DIR}\"\n"
+            f"  python {Path(__file__).name} --output-csv \"{OUTPUT_CSV.with_name('financial_management_items_v2.csv')}\""
+        ),
+    )
+    parser.add_argument(
+        "--input-dir",
+        type=Path,
+        default=EXTRACTED_MD_DIR,
+        help=f"Markdown 输入目录，默认：{EXTRACTED_MD_DIR}",
+    )
+    parser.add_argument(
+        "--output-csv",
+        type=Path,
+        default=OUTPUT_CSV,
+        help=f"输出 CSV 路径，默认：{OUTPUT_CSV}",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
+    args = parse_args()
     rows: list[dict[str, str]] = []
-    for md_path in iter_md_files(EXTRACTED_MD_DIR):
+    input_dir = args.input_dir
+    if not input_dir.exists():
+        raise FileNotFoundError(f"输入目录不存在：{input_dir}")
+
+    for md_path in iter_md_files(input_dir):
         text = md_path.read_text(encoding="utf-8")
         items = extract_financial_items(text)
         for item in items:
@@ -90,12 +135,12 @@ def main() -> None:
                 }
             )
 
-    output_path = OUTPUT_CSV
-    OUTPUT_CSV.parent.mkdir(parents=True, exist_ok=True)
+    output_path = args.output_csv
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     try:
         handle = output_path.open("w", encoding="utf-8-sig", newline="")
     except PermissionError:
-        output_path = OUTPUT_CSV.with_name(f"{OUTPUT_CSV.stem}_v2{OUTPUT_CSV.suffix}")
+        output_path = resolve_output_path(output_path)
         handle = output_path.open("w", encoding="utf-8-sig", newline="")
 
     with handle:
